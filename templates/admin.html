@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        h1 { color: #1B3A6B; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        th { background: #1B3A6B; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f0f0f0; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-add { background: #1B3A6B; color: white; margin-bottom: 10px; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-edit { background: #f39c12; color: white; }
+        .back { background: #95a5a6; color: white; margin-bottom: 10px; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+        .modal.show { display:flex; }
+        .modal-box { background:white; padding:24px; border-radius:10px; width:350px; max-height:90vh; overflow-y:auto; }
+        .modal-box input { width:100%; padding:8px; margin:8px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+        .detail-table th { width: 200px; }
+        .btn-gap { margin-right: 6px; }
+    </style>
+</head>
+<body>
+
+<div id="vezifelerPage">
+    <h1>Admin Panel — Vəzifələr</h1>
+    <button class="btn-add" onclick="showAddVezife()">+ Vəzifə əlavə et</button>
+    <table>
+        <thead><tr><th>ID</th><th>Ad</th><th>Əməliyyat</th></tr></thead>
+        <tbody id="vezifelerBody"></tbody>
+    </table>
+</div>
+
+<div id="iscilerPage" style="display:none">
+    <button class="back" onclick="showVezifeler()">← Geri</button>
+    <h1 id="vezifeName">İşçilər</h1>
+    <button class="btn-add" onclick="showAddIsci()">+ İşçi əlavə et</button>
+    <table>
+        <thead><tr><th>ID</th><th>Ad</th><th>Soyad</th><th>Əməliyyat</th></tr></thead>
+        <tbody id="iscilerBody"></tbody>
+    </table>
+</div>
+
+<div id="isciDetailPage" style="display:none">
+    <button class="back" onclick="showIsciler()">← Geri</button>
+    <h1>İşçi Məlumatları</h1>
+    <table class="detail-table">
+        <tbody id="isciDetailBody"></tbody>
+    </table>
+</div>
+
+<!-- Vəzifə əlavə et modal -->
+<div class="modal" id="vezifModal">
+    <div class="modal-box">
+        <h3>Yeni Vəzifə</h3>
+        <input type="text" id="vezifAd" placeholder="Vəzifə adı">
+        <div class="modal-actions">
+            <button class="back" onclick="closeModal('vezifModal')">Ləğv et</button>
+            <button class="btn-add" onclick="addVezife()">Əlavə et</button>
+        </div>
+    </div>
+</div>
+
+<!-- Vəzifə update modal -->
+<div class="modal" id="vezifUpdateModal">
+    <div class="modal-box">
+        <h3>Vəzifəni yenilə</h3>
+        <input type="text" id="vezifUpdateAd" placeholder="Vəzifə adı">
+        <input type="hidden" id="vezifUpdateId">
+        <div class="modal-actions">
+            <button class="back" onclick="closeModal('vezifUpdateModal')">Ləğv et</button>
+            <button class="btn-add" onclick="updateVezife()">Yenilə</button>
+        </div>
+    </div>
+</div>
+
+<!-- İşçi əlavə et modal -->
+<div class="modal" id="isciModal">
+    <div class="modal-box">
+        <h3>Yeni İşçi</h3>
+        <input type="text" id="isciAd" placeholder="Ad">
+        <input type="text" id="isciSoyad" placeholder="Soyad">
+        <input type="text" id="isciTelefon1" placeholder="Telefon nömrəsi 1">
+        <input type="text" id="isciTelefon2" placeholder="Telefon nömrəsi 2">
+        <input type="text" id="isciSeher1" placeholder="Şəhər nömrəsi 1">
+        <input type="text" id="isciSeher2" placeholder="Şəhər nömrəsi 2">
+        <input type="text" id="isciDaxili" placeholder="Daxili nömrə">
+        <div class="modal-actions">
+            <button class="back" onclick="closeModal('isciModal')">Ləğv et</button>
+            <button class="btn-add" onclick="addIsci()">Əlavə et</button>
+        </div>
+    </div>
+</div>
+
+<!-- İşçi update modal -->
+<div class="modal" id="isciUpdateModal">
+    <div class="modal-box">
+        <h3>İşçini yenilə</h3>
+        <input type="text" id="isciUpdateAd" placeholder="Ad">
+        <input type="text" id="isciUpdateSoyad" placeholder="Soyad">
+        <input type="text" id="isciUpdateTelefon1" placeholder="Telefon nömrəsi 1">
+        <input type="text" id="isciUpdateTelefon2" placeholder="Telefon nömrəsi 2">
+        <input type="text" id="isciUpdateSeher1" placeholder="Şəhər nömrəsi 1">
+        <input type="text" id="isciUpdateSeher2" placeholder="Şəhər nömrəsi 2">
+        <input type="text" id="isciUpdateDaxili" placeholder="Daxili nömrə">
+        <input type="hidden" id="isciUpdateId">
+        <div class="modal-actions">
+            <button class="back" onclick="closeModal('isciUpdateModal')">Ləğv et</button>
+            <button class="btn-add" onclick="updateIsci()">Yenilə</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) { window.location.href = "/login"; }
+
+let currentVezifeId = null;
+
+// VƏZİFƏLƏR
+async function loadVezifeler() {
+    const res = await fetch("/vezifeler", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+    if (res.status === 401) { window.location.href = "/login"; return; }
+    const data = await res.json();
+    const tbody = document.getElementById("vezifelerBody");
+    tbody.innerHTML = "";
+    data.forEach(v => {
+        const row = document.createElement("tr");
+        const tdId = document.createElement("td");
+        const tdAd = document.createElement("td");
+        const tdEmel = document.createElement("td");
+        tdId.textContent = v.id;
+        tdAd.textContent = v.ad;
+        tdAd.style.cssText = "cursor:pointer;color:#1B3A6B;font-weight:bold";
+        tdAd.onclick = () => showIscilerPage(v.id, v.ad);
+
+        const btnEdit = document.createElement("button");
+        btnEdit.textContent = "Düzəlt";
+        btnEdit.className = "btn-edit btn-gap";
+        btnEdit.onclick = () => showUpdateVezife(v.id, v.ad);
+
+        const btnSil = document.createElement("button");
+        btnSil.textContent = "Sil";
+        btnSil.className = "btn-delete";
+        btnSil.onclick = () => deleteVezife(v.id);
+
+        tdEmel.appendChild(btnEdit);
+        tdEmel.appendChild(btnSil);
+        row.appendChild(tdId);
+        row.appendChild(tdAd);
+        row.appendChild(tdEmel);
+        tbody.appendChild(row);
+    });
+}
+
+async function addVezife() {
+    const ad = document.getElementById("vezifAd").value;
+    if (!ad) return;
+    await fetch("/vezifeler", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ ad })
+    });
+    closeModal("vezifModal");
+    document.getElementById("vezifAd").value = "";
+    loadVezifeler();
+}
+
+function showUpdateVezife(id, ad) {
+    document.getElementById("vezifUpdateId").value = id;
+    document.getElementById("vezifUpdateAd").value = ad;
+    document.getElementById("vezifUpdateModal").classList.add("show");
+}
+
+async function updateVezife() {
+    const id = document.getElementById("vezifUpdateId").value;
+    const ad = document.getElementById("vezifUpdateAd").value;
+    if (!ad) return;
+    await fetch(`/vezifeler/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ ad })
+    });
+    closeModal("vezifUpdateModal");
+    loadVezifeler();
+}
+
+async function deleteVezife(id) {
+    if (!confirm("Silmək istədiyinizə əminsiniz?")) return;
+    await fetch(`/vezifeler/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+    });
+    loadVezifeler();
+}
+
+// İŞÇİLƏR
+function showIscilerPage(vezifeId, vezifeName) {
+    currentVezifeId = vezifeId;
+    document.getElementById("vezifelerPage").style.display = "none";
+    document.getElementById("iscilerPage").style.display = "block";
+    document.getElementById("vezifeName").textContent = vezifeName + " — İşçilər";
+    loadIsciler();
+}
+
+async function loadIsciler() {
+    const res = await fetch(`/vezifeler/${currentVezifeId}/isciler`, {
+        headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+    const tbody = document.getElementById("iscilerBody");
+    tbody.innerHTML = "";
+    data.forEach(i => {
+        const row = document.createElement("tr");
+        const tdId = document.createElement("td");
+        const tdAd = document.createElement("td");
+        const tdSoyad = document.createElement("td");
+        const tdEmel = document.createElement("td");
+        tdId.textContent = i.id;
+        tdAd.textContent = i.ad;
+        tdAd.style.cssText = "cursor:pointer;color:#1B3A6B;font-weight:bold";
+        tdAd.onclick = () => showIsciDetail(i.id);
+        tdSoyad.textContent = i.soyad;
+        tdSoyad.style.cssText = "cursor:pointer;color:#1B3A6B;font-weight:bold";
+        tdSoyad.onclick = () => showIsciDetail(i.id);
+
+        const btnEdit = document.createElement("button");
+        btnEdit.textContent = "Düzəlt";
+        btnEdit.className = "btn-edit btn-gap";
+        btnEdit.onclick = () => showUpdateIsci(i);
+
+        const btnSil = document.createElement("button");
+        btnSil.textContent = "Sil";
+        btnSil.className = "btn-delete";
+        btnSil.onclick = () => deleteIsci(i.id);
+
+        tdEmel.appendChild(btnEdit);
+        tdEmel.appendChild(btnSil);
+        row.appendChild(tdId);
+        row.appendChild(tdAd);
+        row.appendChild(tdSoyad);
+        row.appendChild(tdEmel);
+        tbody.appendChild(row);
+    });
+}
+
+async function addIsci() {
+    const ad = document.getElementById("isciAd").value;
+    const soyad = document.getElementById("isciSoyad").value;
+    const telefon_nomresi1 = document.getElementById("isciTelefon1").value;
+    const telefon_nomresi2 = document.getElementById("isciTelefon2").value;
+    const seher_nomresi1 = document.getElementById("isciSeher1").value;
+    const seher_nomresi2 = document.getElementById("isciSeher2").value;
+    const daxili_nomre = document.getElementById("isciDaxili").value;
+    if (!ad || !soyad) return;
+    await fetch("/isciler", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+            ad, soyad, vezife_id: currentVezifeId,
+            telefon_nomresi1, telefon_nomresi2,
+            seher_nomresi1, seher_nomresi2, daxili_nomre
+        })
+    });
+    closeModal("isciModal");
+    loadIsciler();
+}
+
+function showUpdateIsci(i) {
+    document.getElementById("isciUpdateId").value = i.id;
+    document.getElementById("isciUpdateAd").value = i.ad;
+    document.getElementById("isciUpdateSoyad").value = i.soyad;
+    document.getElementById("isciUpdateTelefon1").value = i.telefon_nomresi1 || "";
+    document.getElementById("isciUpdateTelefon2").value = i.telefon_nomresi2 || "";
+    document.getElementById("isciUpdateSeher1").value = i.seher_nomresi1 || "";
+    document.getElementById("isciUpdateSeher2").value = i.seher_nomresi2 || "";
+    document.getElementById("isciUpdateDaxili").value = i.daxili_nomre || "";
+    document.getElementById("isciUpdateModal").classList.add("show");
+}
+
+async function updateIsci() {
+    const id = document.getElementById("isciUpdateId").value;
+    const ad = document.getElementById("isciUpdateAd").value;
+    const soyad = document.getElementById("isciUpdateSoyad").value;
+    const telefon_nomresi1 = document.getElementById("isciUpdateTelefon1").value;
+    const telefon_nomresi2 = document.getElementById("isciUpdateTelefon2").value;
+    const seher_nomresi1 = document.getElementById("isciUpdateSeher1").value;
+    const seher_nomresi2 = document.getElementById("isciUpdateSeher2").value;
+    const daxili_nomre = document.getElementById("isciUpdateDaxili").value;
+    if (!ad || !soyad) return;
+    await fetch(`/isciler/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+            ad, soyad, vezife_id: currentVezifeId,
+            telefon_nomresi1, telefon_nomresi2,
+            seher_nomresi1, seher_nomresi2, daxili_nomre
+        })
+    });
+    closeModal("isciUpdateModal");
+    loadIsciler();
+}
+
+async function deleteIsci(id) {
+    if (!confirm("Silmək istədiyinizə əminsiniz?")) return;
+    await fetch(`/isciler/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+    });
+    loadIsciler();
+}
+
+// İŞÇİ DETALİ
+async function showIsciDetail(id) {
+    const res = await fetch(`/isciler/${id}`, {
+        headers: { "Authorization": "Bearer " + token }
+    });
+    const i = await res.json();
+    document.getElementById("iscilerPage").style.display = "none";
+    document.getElementById("isciDetailPage").style.display = "block";
+    const tbody = document.getElementById("isciDetailBody");
+    tbody.innerHTML = "";
+    const fields = [
+        ["Ad", i.ad],
+        ["Soyad", i.soyad],
+        ["Telefon nömrəsi 1", i.telefon_nomresi1],
+        ["Telefon nömrəsi 2", i.telefon_nomresi2],
+        ["Şəhər nömrəsi 1", i.seher_nomresi1],
+        ["Şəhər nömrəsi 2", i.seher_nomresi2],
+        ["Daxili nömrə", i.daxili_nomre]
+    ];
+    fields.forEach(([label, value]) => {
+        const row = document.createElement("tr");
+        const th = document.createElement("th");
+        const td = document.createElement("td");
+        th.textContent = label;
+        td.textContent = value || "—";
+        row.appendChild(th);
+        row.appendChild(td);
+        tbody.appendChild(row);
+    });
+}
+
+// NAVİQASİYA
+function showVezifeler() {
+    document.getElementById("vezifelerPage").style.display = "block";
+    document.getElementById("iscilerPage").style.display = "none";
+    document.getElementById("isciDetailPage").style.display = "none";
+}
+
+function showIsciler() {
+    document.getElementById("iscilerPage").style.display = "block";
+    document.getElementById("isciDetailPage").style.display = "none";
+}
+
+function showAddVezife() { document.getElementById("vezifModal").classList.add("show"); }
+function showAddIsci() { document.getElementById("isciModal").classList.add("show"); }
+function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+
+loadVezifeler();
+</script>
+</body>
+</html>
