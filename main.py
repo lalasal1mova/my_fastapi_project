@@ -23,6 +23,42 @@ app.add_middleware(
 DATABASE_URL = "sqlite:///./milli_meclis.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
+# Cədvəlləri avtomatik yarat
+with engine.connect() as conn:
+    conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS vezife (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ad TEXT NOT NULL
+        )
+    """))
+    conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS isci (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ad TEXT,
+            soyad TEXT,
+            vezife_id INTEGER,
+            telefon_nomresi1 TEXT,
+            telefon_nomresi2 TEXT,
+            seher_nomresi1 TEXT,
+            seher_nomresi2 TEXT,
+            daxili_nomre TEXT
+        )
+    """))
+    conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS istifadeci (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            rol TEXT
+        )
+    """))
+    conn.execute(text("""
+        INSERT OR IGNORE INTO istifadeci (username, password, rol)
+        VALUES ('admin', '123456', 'admin')
+    """))
+    conn.commit()
+    print("✅ Cədvəllər və admin yaradıldı!")
+
 # Test et
 try:
     with engine.connect() as conn:
