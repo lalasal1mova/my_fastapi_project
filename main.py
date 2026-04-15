@@ -20,8 +20,18 @@ app.add_middleware(
     allow_headers=["*", "ngrok-skip-browser-warning"],
 )
 
-DATABASE_URL = "mssql+pyodbc://@localhost/MilliMeclis?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
-engine = create_engine(DATABASE_URL)
+# Verilənlər bazası - SQLite (Render üçün)
+DATABASE_URL = "sqlite:///./milli_meclis.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+# Test et
+try:
+    with engine.connect() as conn:
+        from sqlalchemy import text
+        conn.execute(text("SELECT 1"))
+        print("✅ SQLite bağlantısı uğurlu!")
+except Exception as e:
+    print(f"❌ SQLite xətası: {e}")
 
 # JWT
 SECRET_KEY = "supersecretkey123"
