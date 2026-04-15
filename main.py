@@ -13,10 +13,11 @@ templates = Jinja2Templates(directory="templates")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # İstehsalda spesifik origin'lər qoyun
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    expose_headers=["*"],
+    allow_headers=["*", "ngrok-skip-browser-warning"],
 )
 
 DATABASE_URL = "mssql+pyodbc://@localhost/MilliMeclis?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"

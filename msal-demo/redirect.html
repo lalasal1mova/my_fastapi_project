@@ -1,0 +1,22 @@
+<!-- redirect.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirect</title>
+</head>
+<body>
+<script type="module">
+import { PublicClientApplication } from "https://cdn.jsdelivr.net/npm/@azure/msal-browser/dist/msal-browser.esm.js";
+
+const msalInstance = new PublicClientApplication({
+    auth: { clientId: "YOUR_CLIENT_ID_HERE", redirectUri: window.location.origin + "/redirect.html" }
+});
+
+msalInstance.handleRedirectPromise().then(response => {
+    if (response) window.opener.postMessage({ type: "msalRedirect", data: response }, window.location.origin);
+    window.close();
+}).catch(err => console.error("Redirect error:", err));
+</script>
+</body>
+</html>
