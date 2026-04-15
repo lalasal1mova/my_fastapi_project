@@ -13,11 +13,10 @@ templates = Jinja2Templates(directory="templates")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # İstehsalda spesifik origin'lər qoyun
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    expose_headers=["*"],
-    allow_headers=["*", "ngrok-skip-browser-warning"],
+    allow_headers=["*"],
 )
 
 # Verilənlər bazası - SQLite (Render üçün)
