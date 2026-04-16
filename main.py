@@ -11,62 +11,24 @@ from datetime import datetime, timedelta
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        response = Response(status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Access-Control-Max-Age"] = "86400"
+        return response
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
-# Verilənlər bazası - SQLite (Render üçün)
-DATABASE_URL = "sqlite:///./milli_meclis.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-# Cədvəlləri avtomatik yarat
-with engine.connect() as conn:
-    conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS vezife (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ad TEXT NOT NULL
-        )
-    """))
-    conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS isci (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ad TEXT,
-            soyad TEXT,
-            vezife_id INTEGER,
-            telefon_nomresi1 TEXT,
-            telefon_nomresi2 TEXT,
-            seher_nomresi1 TEXT,
-            seher_nomresi2 TEXT,
-            daxili_nomre TEXT
-        )
-    """))
-    conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS istifadeci (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            rol TEXT
-        )
-    """))
-    conn.execute(text("""
-        INSERT OR IGNORE INTO istifadeci (username, password, rol)
-        VALUES ('admin', '123456', 'admin')
-    """))
-    conn.commit()
-    print("✅ Cədvəllər və admin yaradıldı!")
-
-# Test et
-try:
-    with engine.connect() as conn:
-        from sqlalchemy import text
-        conn.execute(text("SELECT 1"))
-        print("✅ SQLite bağlantısı uğurlu!")
-except Exception as e:
-    print(f"❌ SQLite xətası: {e}")
+DATABASE_URL = "mssql+pyodbc://@localhost/MilliMeclis?driver=ODBC+Driver+17+for+SQL+Server&trusted_connection=yes"
+engine = create_engine(DATABASE_URL)
 
 # JWT
 SECRET_KEY = "supersecretkey123"
@@ -148,7 +110,18 @@ def login_page(request: Request):
 
 @app.get("/admin")
 def admin_page(request: Request):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    with engine.connect() as conn:
+        vezifeler = conn.execute(text("SELECT * FROM vezife")).fetchall()
+        isciler = conn.execute(text("SELECT * FROM isci")).fetchall()
+
+    return templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "vezifeler": [dict(r._mapping) for r in vezifeler],
+            "isciler": [dict(r._mapping) for r in isciler],
+        }
+    )
 
 
 # VƏZİFƏLƏR

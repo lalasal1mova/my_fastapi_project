@@ -2,17 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseUrl = "https://ceraceous-limnetic-christel.ngrok-free.dev";
+const String baseUrl = "http://192.168.0.101:8000";
 
 Map<String, String> authHeaders(String token) => {
   "Authorization": "Bearer $token",
-  "Content-Type": "application/json",
-  "ngrok-skip-browser-warning": "true"
+  "Content-Type": "application/json"
 };
 
 Map<String, String> basicHeaders() => {
-  "Content-Type": "application/json",
-  "ngrok-skip-browser-warning": "true"
+  "Content-Type": "application/json"
 };
 
 // TOKEN
@@ -41,6 +39,10 @@ Future<Map?> login(String username, String password) async {
     },
     body: jsonEncode({"username": username, "password": password}),
   );
+
+  print(res.statusCode);
+  print(res.body);
+
   if (res.statusCode == 200) {
     final data = jsonDecode(res.body);
     final prefs = await SharedPreferences.getInstance();
